@@ -10,6 +10,7 @@ import OrderBookPage from "@/pages/OrderBookPage";
 import Backtest from "@/pages/Backtest";
 import AlertsPage from "@/pages/AlertsPage";
 import Settings from "@/pages/Settings";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
         <Route path="/backtest" component={Backtest} />
         <Route path="/alerts" component={AlertsPage} />
         <Route path="/settings" component={Settings} />
+        <Route path="/privacy" component={PrivacyPolicy} />
         <Route component={NotFound} />
       </Switch>
     </WouterRouter>

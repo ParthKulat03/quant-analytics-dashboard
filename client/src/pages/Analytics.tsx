@@ -2,7 +2,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from "recharts";
+import { ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, Area, AreaChart } from "recharts";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const correlationData = Array.from({ length: 20 }, (_, i) => ({
@@ -16,6 +16,19 @@ const rollingBetaData = Array.from({ length: 50 }, (_, i) => ({
   beta: 0.8 + Math.random() * 0.4,
   alpha: (Math.random() - 0.5) * 0.02
 }));
+
+// Mock Kalman Filter Data
+const kalmanData = Array.from({ length: 100 }, (_, i) => {
+    const trueVal = Math.sin(i / 10) * 10 + 50;
+    const measured = trueVal + (Math.random() - 0.5) * 10; // Noisy measurement
+    const estimate = trueVal + (Math.random() - 0.5) * 2; // Filtered estimate
+    return {
+        time: i,
+        true: trueVal,
+        measured: measured,
+        estimate: estimate
+    };
+});
 
 export default function Analytics() {
   return (
@@ -40,7 +53,7 @@ export default function Analytics() {
             </div>
           </div>
 
-          <Tabs defaultValue="correlation" className="space-y-4">
+          <Tabs defaultValue="kalman" className="space-y-4">
             <TabsList>
               <TabsTrigger value="correlation">Correlation Analysis</TabsTrigger>
               <TabsTrigger value="beta">Rolling Beta</TabsTrigger>
@@ -116,9 +129,30 @@ export default function Analytics() {
               </Card>
             </TabsContent>
             
-            <TabsContent value="kalman">
-                <Card className="h-[400px] flex items-center justify-center text-muted-foreground">
-                    Kalman Filter Visualization Placeholder
+            <TabsContent value="kalman" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Dynamic Hedge Ratio (Kalman Filter)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-[400px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={kalmanData}>
+                                <defs>
+                                    <linearGradient id="colorEstimate" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                                <XAxis dataKey="time" hide />
+                                <YAxis domain={['auto', 'auto']} stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))' }} />
+                                <Legend />
+                                <Area type="monotone" dataKey="measured" stroke="hsl(var(--muted-foreground))" fill="transparent" strokeWidth={1} strokeDasharray="3 3" name="Noisy Measurement" />
+                                <Area type="monotone" dataKey="estimate" stroke="hsl(var(--primary))" fill="url(#colorEstimate)" strokeWidth={2} name="Kalman Estimate" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </CardContent>
                 </Card>
             </TabsContent>
           </Tabs>

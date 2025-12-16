@@ -4,6 +4,7 @@ import { OrderBook } from "@/components/dashboard/OrderBook";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const recentTrades = Array.from({ length: 20 }, (_, i) => ({
   id: i,
@@ -12,6 +13,29 @@ const recentTrades = Array.from({ length: 20 }, (_, i) => ({
   size: Math.random() * 5,
   side: Math.random() > 0.5 ? 'buy' : 'sell'
 }));
+
+// Mock Depth Data
+const depthData = Array.from({ length: 50 }, (_, i) => {
+    const price = 3400 + i;
+    // Bids on the left (lower price), Asks on the right (higher price)
+    // We mock "volume" at each price level
+    const midPoint = 25;
+    let bidVol = 0;
+    let askVol = 0;
+
+    if (i < midPoint) {
+        bidVol = (i + 1) * Math.random() * 10;
+    } else {
+        askVol = (50 - i) * Math.random() * 10;
+    }
+
+    return {
+        price,
+        bidVolume: bidVol, // Cumulative usually, but simplified for visual
+        askVolume: askVol
+    };
+});
+
 
 export default function OrderBookPage() {
   return (
@@ -28,16 +52,35 @@ export default function OrderBookPage() {
 
           {/* Depth Chart & Recent Trades */}
           <div className="md:col-span-7 lg:col-span-8 flex flex-col gap-6">
-            <Card className="flex-1">
+            <Card className="flex-1 min-h-[300px]">
                 <CardHeader>
                     <CardTitle>Market Depth</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center bg-muted/20 rounded border border-dashed border-border m-4">
-                    <span className="text-muted-foreground">Depth Chart Visualization (Area Chart)</span>
+                <CardContent className="h-[300px] p-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={depthData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="colorBid" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0}/>
+                                </linearGradient>
+                                <linearGradient id="colorAsk" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                            <XAxis dataKey="price" stroke="hsl(var(--muted-foreground))" fontSize={10} />
+                            <YAxis orientation="right" stroke="hsl(var(--muted-foreground))" fontSize={10} />
+                            <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))' }} />
+                            <Area type="monotone" dataKey="bidVolume" stackId="1" stroke="hsl(var(--success))" fill="url(#colorBid)" />
+                            <Area type="monotone" dataKey="askVolume" stackId="1" stroke="hsl(var(--destructive))" fill="url(#colorAsk)" />
+                        </AreaChart>
+                    </ResponsiveContainer>
                 </CardContent>
             </Card>
 
-            <Card className="flex-1 overflow-hidden flex flex-col">
+            <Card className="flex-1 overflow-hidden flex flex-col min-h-[300px]">
               <CardHeader>
                 <CardTitle>Recent Trades</CardTitle>
               </CardHeader>
